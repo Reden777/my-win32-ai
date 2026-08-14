@@ -1,3 +1,4 @@
 api-key.dat
 chats.json
-# native-ai.exe # Releasing builds this way
+native-ai.exe
+# Considering to release builds this way, but it's better to possibly to Git Releases
