@@ -15,7 +15,7 @@ Implemented:
 12. [x] Chats save to disk automatically
 13. [x] MinGW/MSYS Makefile
 14. [ ] Ability to switch between preset OpenRouter, OpenAI, and ability to add custom api endpoints that get saved.
-15. [x] Save the api key encrypted at rest with DGPAPI
+15. [x] Save the api key encrypted at rest with DPAPI
 16. [ ] The last used model ID gets remembered across sessions.
 17. [ ] When the AI replies, rather than being Assistant
 [reply], it's [Model name]
