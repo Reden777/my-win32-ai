@@ -27,6 +27,7 @@ GPT-4.1-mini
 20. [ ] Reasoning slider control (none, minimal, low, medium, high, xhigh, max), as well as a toggle to disable reasoning fully. (Important)
 21. [ ] The model's reasoning is placed by default above the [reply] and below the [Model name/Custom model name], and it can be clicked to be expanded inline.
 22. [ ] Ability to have multiple models in one same chat thread.
+23. [ ] Each individual model can have its own system prompt and other parameters like temperature and max_tokens. These settings get attached to the file/thread itself, so that when you return, they're already loaded.
 
 ## Build
 
