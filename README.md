@@ -25,6 +25,7 @@ make
 ```
 
 The app uses only Windows system UI libraries and WinHTTP; no third-party runtime is required.
+The API key is automatically stored in `api-key.dat` using user-scoped Windows DPAPI encryption.
 This project began as a hardfork of Apex-master/chatgpt-cpp, moving away from Dear ImGui to achieve a pure native Windows implementation.
 Original base inspiration: chatgpt-cpp
 Network layer: (lib)curl, possibly WinHTTP with wolfssl.

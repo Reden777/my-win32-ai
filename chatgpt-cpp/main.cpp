@@ -5,6 +5,7 @@
 #include <richedit.h>
 #include <commdlg.h>
 #include <winhttp.h>
+#include <wincrypt.h>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -28,6 +29,7 @@ static HFONT g_font;
 static std::vector<Chat> g_data;
 static int g_current = 0;
 static const wchar_t* kStore = L"chats.json";
+static const wchar_t* kKeyStore = L"api-key.dat";
 
 static std::wstring wide(const std::string& s) {
     if (s.empty()) return {};
@@ -44,6 +46,55 @@ static std::wstring text(HWND h) {
     if(n) GetWindowTextW(h,s.data(),n+1); return s;
 }
 static void status(const wchar_t* s) { SetWindowTextW(g_status,s); }
+
+static bool save_api_key() {
+    std::wstring key = text(g_key);
+    if (key.empty()) {
+        DeleteFileW(kKeyStore);
+        return true;
+    }
+    DATA_BLOB input{static_cast<DWORD>(key.size() * sizeof(wchar_t)),
+                    reinterpret_cast<BYTE*>(key.data())};
+    DATA_BLOB output{};
+    const bool protected_ok = CryptProtectData(
+        &input, L"Native AI API key", nullptr, nullptr, nullptr,
+        CRYPTPROTECT_UI_FORBIDDEN, &output) != FALSE;
+    bool written = false;
+    if (protected_ok) {
+        std::ofstream file(kKeyStore, std::ios::binary | std::ios::trunc);
+        file.write(reinterpret_cast<const char*>(output.pbData), output.cbData);
+        written = file.good();
+        SecureZeroMemory(output.pbData, output.cbData);
+        LocalFree(output.pbData);
+    }
+    if (!key.empty()) SecureZeroMemory(key.data(), key.size() * sizeof(wchar_t));
+    return protected_ok && written;
+}
+
+static void load_api_key() {
+    std::ifstream file(kKeyStore, std::ios::binary | std::ios::ate);
+    if (!file) return;
+    const auto size = file.tellg();
+    if (size <= 0 || size > 1024 * 1024) return;
+    std::vector<BYTE> encrypted(static_cast<size_t>(size));
+    file.seekg(0); file.read(reinterpret_cast<char*>(encrypted.data()), size);
+    DATA_BLOB input{static_cast<DWORD>(encrypted.size()), encrypted.data()};
+    DATA_BLOB output{};
+    if (file && CryptUnprotectData(&input, nullptr, nullptr, nullptr, nullptr,
+                                  CRYPTPROTECT_UI_FORBIDDEN, &output)) {
+        if (output.cbData % sizeof(wchar_t) == 0) {
+            std::wstring key(reinterpret_cast<wchar_t*>(output.pbData),
+                             output.cbData / sizeof(wchar_t));
+            SetWindowTextW(g_key, key.c_str());
+            if (!key.empty()) SecureZeroMemory(key.data(), key.size() * sizeof(wchar_t));
+        }
+        SecureZeroMemory(output.pbData, output.cbData);
+        LocalFree(output.pbData);
+    } else {
+        status(L"Could not decrypt api-key.dat for this Windows user.");
+    }
+    SecureZeroMemory(encrypted.data(), encrypted.size());
+}
 
 static void save() {
     json root; root["version"]="orpg-3.0"; root["chats"]=json::array();
@@ -91,6 +142,7 @@ static bool request(const std::wstring& endpoint,const std::wstring& key,const s
 static void send_async() {
     std::string prompt=utf8(text(g_input)); if(prompt.empty()) return;
     std::wstring endpoint=text(g_endpoint), key=text(g_key); std::string model=utf8(text(g_model)), system=utf8(text(g_system));
+    if (!save_api_key()) status(L"Warning: API key could not be saved securely.");
     auto& c=g_data[g_current]; if(c.messages.empty()) c.title=prompt.substr(0,std::min<size_t>(40,prompt.size()));
     c.messages.push_back({"user",prompt}); SetWindowTextW(g_input,L""); save(); redraw_list(); redraw_chat(); EnableWindow(g_send,FALSE); status(L"Sending...");
     int index=g_current; std::vector<Message> messages=c.messages;
@@ -134,7 +186,7 @@ static LRESULT CALLBACK proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
         g_input=ctl(MSFTEDIT_CLASS,L"",ES_MULTILINE|ES_AUTOVSCROLL|WS_VSCROLL,ID_INPUT); g_send=ctl(L"BUTTON",L"Send",BS_DEFPUSHBUTTON,ID_SEND);
         g_endpoint=ctl(L"EDIT",L"https://api.openai.com/v1/chat/completions",ES_AUTOHSCROLL,ID_ENDPOINT); g_key=ctl(L"EDIT",L"",ES_PASSWORD|ES_AUTOHSCROLL,ID_KEY); g_model=ctl(L"EDIT",L"gpt-4.1-mini",ES_AUTOHSCROLL,ID_MODEL); ctl(L"BUTTON",L"Models",0,ID_REFRESH);
         g_system=ctl(MSFTEDIT_CLASS,L"You are a helpful assistant.",ES_MULTILINE|WS_VSCROLL,ID_SYSTEM); ctl(L"BUTTON",L"Export JSON",0,ID_EXPORT_JSON); ctl(L"BUTTON",L"Export Markdown",0,ID_EXPORT_MD); g_status=ctl(L"STATIC",L"Ready",0,900);
-        load(); redraw_list(); redraw_chat(); return 0;
+        load(); load_api_key(); redraw_list(); redraw_chat(); return 0;
     }
     if(msg==WM_SIZE){layout(LOWORD(lp),HIWORD(lp));return 0;}
     if(msg==WM_COMMAND) { int id=LOWORD(wp);
@@ -146,7 +198,7 @@ static LRESULT CALLBACK proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
         else if(id==ID_REFRESH) status(L"Enter any model exposed by your OpenAI-compatible provider."); return 0;
     }
     if(msg==WM_RESULT){auto*p=(std::pair<int,std::string>*)lp;if(p->first>=0&&p->first<(int)g_data.size())g_data[p->first].messages.push_back({"assistant",p->second});delete p;save();redraw_chat();EnableWindow(g_send,TRUE);status(L"Ready");return 0;}
-    if(msg==WM_CLOSE){save();DestroyWindow(hwnd);return 0;} if(msg==WM_DESTROY){PostQuitMessage(0);return 0;} return DefWindowProcW(hwnd,msg,wp,lp);
+    if(msg==WM_CLOSE){save();if(!save_api_key())MessageBoxW(hwnd,L"The API key could not be saved securely.",L"Native AI",MB_OK|MB_ICONWARNING);DestroyWindow(hwnd);return 0;} if(msg==WM_DESTROY){PostQuitMessage(0);return 0;} return DefWindowProcW(hwnd,msg,wp,lp);
 }
 int WINAPI wWinMain(HINSTANCE hi,HINSTANCE,LPWSTR,int show) {
     LoadLibraryW(L"Msftedit.dll"); WNDCLASSEXW wc{sizeof(wc)}; wc.lpfnWndProc=proc;wc.hInstance=hi;wc.hCursor=LoadCursor(nullptr,IDC_ARROW);wc.hIcon=LoadIcon(nullptr,IDI_APPLICATION);wc.hbrBackground=(HBRUSH)(COLOR_BTNFACE+1);wc.lpszClassName=L"NativeAIWindow";RegisterClassExW(&wc);

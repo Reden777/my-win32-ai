@@ -7,7 +7,7 @@ SOURCE := chatgpt-cpp/main.cpp
 all: $(TARGET)
 
 $(TARGET): $(SOURCE) chatgpt-cpp/json.h
-	$(CXX) $(CXXFLAGS) -mwindows -municode -static -o $@ $(SOURCE) -lcomdlg32 -lwinhttp
+	$(CXX) $(CXXFLAGS) -mwindows -municode -static -o $@ $(SOURCE) -lcomdlg32 -lwinhttp -lcrypt32
 
 run: $(TARGET)
 	./$(TARGET)
