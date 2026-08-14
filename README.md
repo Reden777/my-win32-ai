@@ -1,3 +1,21 @@
+# Hardfork of the project.
+## AI Chatroom/Playground in Win32/GDI/riched20.dll
+Plans:
+1. [ ] Multi turn history
+2. [ ] Full rebuilding into Win32/GDI
+3. [ ] Usage of system fonts only
+4. [ ] Json chat export (following OpenRouter orpg-3.0 schema)
+5. [ ] Hand drawn 32x32-128x128 icons replacing ugly flat fonts
+6. [ ] Removal of premade system prompts, instead letting the user set everything
+7. [ ] Markdown chat export & hopefully import
+8. [ ] Removal of hardcoded AIs, instead polling OpenAI/OpenRouter directly
+9. [ ] No syntax highlighting necessary because AI does all the coding
+10. [ ] Eventual file editing ability
+11. [ ] Multiple chats and ability to switch between them.
+12. [ ] The current chat saves to disk automatically.
+
+OLD BELOW:
+
 # chatgpt-cpp
 chatgpt-cpp is a conversational AI software application built in C++ using OpenAI GPT to generate natural language responses to user inputs. It features a user-friendly interface powered by Dear ImGui library, with multiple settings to modify API requests.
 
@@ -16,7 +34,7 @@ chatgpt-cpp is a conversational AI software application built in C++ using OpenA
 ![screenshot](https://github.com/Apex-master/chatgpt-cpp/blob/main/screenshot2.png)
 
 ## How it works
-It uses the OpenAI GPT model, which is a transformer-based neural network that has been pre-trained on a large corpus of text data, to generate responses to user inputs. The application sends the user input to the GPT model API, which returns a sequence of tokens that represent the model's generated response.
+It uses the OpenAI GPT model to generate responses to user inputs. The application sends the user input to the GPT model API, which returns a sequence of tokens.
 
 To improve the quality and relevance of the responses, ChatGPT-CPP includes multiple AI styles that implement prompts before the user's question. These prompts provide additional context for the GPT model to generate a more relevant and appropriate response.
 
