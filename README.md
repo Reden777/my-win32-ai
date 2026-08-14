@@ -14,6 +14,16 @@ Implemented:
 11. [x] Multiple chats and ability to switch between them
 12. [x] Chats save to disk automatically
 13. [x] MinGW/MSYS Makefile
+14. [ ] Ability to switch between preset OpenRouter, OpenAI, and ability to add custom api endpoints that get saved.
+15. [x] Save the api key encrypted at rest with DGPAPI
+16. [ ] The last used model ID gets remembered across sessions.
+17. [ ] When the AI replies, rather than being Assistant
+[reply], it's [Model name]
+[reply], to give an example:
+GPT-4.1-mini
+[reply]
+18. [ ] Ability to rename [Model name] in the chat log ui to whatever name you want. (Low priority)
+19. [ ] Ability to poll the api endpoint for a full list of models available, to click on one of them to paste it immediately in the model box.
 
 ## Build
 
