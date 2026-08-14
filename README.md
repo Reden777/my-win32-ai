@@ -30,6 +30,9 @@ Original base inspiration: chatgpt-cpp
 Network layer: (lib)curl, possibly WinHTTP with wolfssl.
 OS target: Minimum Vista
 
+<b>New Screenshots:</b>
+![screenshot](https://github.com/Reden777/chatgpt-cpp/blob/main/screenshot3.png)
+
 <b>Old Screenshots (to be updated):</b>
 ![screenshot](https://github.com/Reden777/chatgpt-cpp/blob/main/screenshot1.png)
 ![screenshot](https://github.com/Reden777/chatgpt-cpp/blob/main/screenshot2.png)
