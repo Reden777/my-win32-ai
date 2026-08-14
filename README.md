@@ -23,7 +23,7 @@ Implemented:
 GPT-4.1-mini
 [reply]
 18. [ ] Ability to rename [Model name] in the chat log ui to whatever name you want. (Low priority)
-19. [ ] Ability to poll the api endpoint for a full list of models available, to click on one of them to paste it immediately in the model box.
+19. [ ] Ability to poll/query the api endpoint for a full list of models available, to click on one of them to paste it immediately in the model box.
 20. [ ] Reasoning slider control (none, minimal, low, medium, high, xhigh, max), as well as a toggle to disable reasoning fully. (Important)
 21. [ ] The model's reasoning is placed by default above the [reply] and below the [Model name/Custom model name], and it can be clicked to be expanded inline.
 22. [ ] Ability to have multiple models in one same chat thread.
